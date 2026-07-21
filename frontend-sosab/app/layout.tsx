@@ -16,6 +16,12 @@ export const metadata: Metadata = {
   title: 'Construction Attendance System',
   description: 'Worker attendance management system',
   generator: 'v0.app',
+  applicationName: 'SOSAB',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'SOSAB',
+  },
   icons: {
     icon: [
       {
