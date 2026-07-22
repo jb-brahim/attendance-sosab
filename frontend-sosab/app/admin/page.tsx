@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
   ChevronLeft, ChevronRight, Loader2, RefreshCw, HardHat,
+  Briefcase, CheckCircle2, XCircle, CircleDashed, Clock, User
 } from 'lucide-react';
 import { workerAPI, apiClient } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
@@ -27,6 +28,19 @@ const LOCALE_MAP: Record<string, string> = {
   fr: 'fr-FR',
   en: 'en-GB',
 };
+
+const AVATAR_COLORS = [
+  'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
+  'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20',
+  'bg-violet-500/10 text-violet-700 dark:text-violet-400 border-violet-500/20',
+  'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20',
+  'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20',
+  'bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border-cyan-500/20',
+];
+function getAvatarColor(name: string) {
+  const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length];
+}
 
 function formatHeader(d: Date, t: (k: string) => string, locale: string) {
   if (isToday(d)) return t('dashboard.today');
@@ -120,15 +134,16 @@ export default function AdminOverviewPage() {
 
   function StatusBadge({ status }: { status: WorkerRow['status'] }) {
     const map = {
-      present: { label: t('status.present'), dot: 'bg-emerald-500 dark:bg-emerald-400', pill: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400' },
-      absent: { label: t('status.absent'), dot: 'bg-rose-500 dark:bg-rose-400', pill: 'bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400' },
-      leave: { label: t('status.leave'), dot: 'bg-amber-500 dark:bg-amber-400', pill: 'bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400' },
-      unmarked: { label: t('status.unmarked'), dot: 'bg-slate-400 dark:bg-slate-500', pill: 'bg-slate-500/10 border-slate-500/10 text-slate-500 dark:text-slate-400' },
+      present: { label: t('status.present'), icon: CheckCircle2, pill: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400' },
+      absent: { label: t('status.absent'), icon: XCircle, pill: 'bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400' },
+      leave: { label: t('status.leave'), icon: Clock, pill: 'bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400' },
+      unmarked: { label: t('status.unmarked'), icon: CircleDashed, pill: 'bg-slate-500/10 border-slate-500/10 text-slate-500 dark:text-slate-400' },
     };
     const s = map[status];
+    const Icon = s.icon;
     return (
-      <span className={`px-2 py-0.5 rounded-md text-[10px] font-semibold tracking-wide border flex items-center gap-1.5 flex-shrink-0 ${s.pill}`}>
-        <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+      <span className={`px-2.5 py-1 rounded-md text-[11px] font-semibold tracking-wide border flex items-center gap-1.5 flex-shrink-0 shadow-sm transition-colors ${s.pill}`}>
+        <Icon className="w-3.5 h-3.5" />
         {s.label}
       </span>
     );
@@ -205,32 +220,35 @@ export default function AdminOverviewPage() {
             <p className="text-muted-foreground text-xs font-medium">{t('dashboard.noPers')}</p>
           </div>
         ) : (
-          <div className="divide-y divide-border">
+          <div className="p-2 space-y-1">
             {workers.map((w) => (
               <div
                 key={w.id}
-                className={`flex items-center gap-4 px-5 py-3 hover:bg-muted/10 transition group ${
-                  w.status === 'present' ? 'hover:border-l-2 hover:border-emerald-500/30' :
-                  w.status === 'absent' ? 'hover:border-l-2 hover:border-rose-500/30' : ''
+                className={`flex items-center gap-4 px-4 py-3 rounded-lg border border-transparent hover:bg-muted/30 hover:border-border transition-all duration-200 group ${
+                  w.status === 'present' ? 'hover:shadow-sm hover:shadow-emerald-500/5' :
+                  w.status === 'absent' ? 'hover:shadow-sm hover:shadow-rose-500/5' : 'hover:shadow-sm'
                 }`}
               >
                 {/* Left accent bar */}
-                <div className={`w-1 h-7 rounded-full flex-shrink-0 ${
-                  w.status === 'present' ? 'bg-emerald-500' :
-                  w.status === 'absent' ? 'bg-rose-500' :
-                  w.status === 'leave' ? 'bg-amber-500' :
-                  'bg-muted'
+                <div className={`w-1 h-8 rounded-full flex-shrink-0 shadow-sm transition-transform duration-300 group-hover:scale-y-125 ${
+                  w.status === 'present' ? 'bg-emerald-500 shadow-emerald-500/30' :
+                  w.status === 'absent' ? 'bg-rose-500 shadow-rose-500/30' :
+                  w.status === 'leave' ? 'bg-amber-500 shadow-amber-500/30' :
+                  'bg-muted shadow-none'
                 }`} />
 
                 {/* Avatar */}
-                <div className="w-8 h-8 rounded-lg bg-secondary border border-border flex items-center justify-center text-muted-foreground font-semibold text-xs flex-shrink-0">
+                <div className={`w-9 h-9 rounded-xl border flex items-center justify-center font-bold text-sm flex-shrink-0 shadow-sm transition-transform group-hover:scale-105 ${getAvatarColor(w.name)}`}>
                   {w.name.charAt(0).toUpperCase()}
                 </div>
 
                 {/* Name + role */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground">{w.name}</p>
-                  <p className="text-xs text-muted-foreground">{w.jobRole}</p>
+                  <p className="text-sm font-semibold text-foreground tracking-tight group-hover:text-primary transition-colors truncate">{w.name}</p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <Briefcase className="w-3 h-3 text-muted-foreground/70" />
+                    <p className="text-[11px] text-muted-foreground font-medium truncate">{w.jobRole}</p>
+                  </div>
                 </div>
 
                 {/* Notes — hidden on mobile */}
