@@ -6990,7 +6990,7 @@ snapshots:
       minimizer-webpack-plugin: 5.6.1(postcss@8.5.6)(webpack@5.108.4(postcss@8.5.6))
       neo-async: 2.6.2
       schema-utils: 4.3.3
-      tapable: 2.3.0
+      tapable: 2.3.3
       watchpack: 2.5.2
       webpack-sources: 3.5.1
     transitivePeerDependencies:
